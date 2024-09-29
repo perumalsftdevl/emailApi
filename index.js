@@ -6,12 +6,29 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors("*"));
+var corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "https://perumalsftdevl.vercel.app",
+    "https://perumalsftdevlportfolio.vercel.app",
+  ],
+  methods: "GET,POST", // Allow GET and POST methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
+  credentials: true, // Allow cookies and credentials if needed
+};
+
+// Preflight request handling for all routes
+app.options("*", cors(corsOptions));
+
+// Apply CORS options
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
 app.post("/api/send", async (req, res) => {
   try {
+    console.log("Api Working");
     const { subject, email, message } = req.body;
 
     const gmailUser = process.env.GMAIL_USER;
@@ -80,10 +97,18 @@ app.post("/api/send", async (req, res) => {
     console.log("Reply Email sent: " + replymail.response);
     return res.status(200).json({ msg: "Email sent: " + info.response });
   } catch (error) {
-    return res.status(500).json({ error: error });
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/", (req, res) => {
+  try {
+    return res.send("API Working");
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 
 app.listen(3000, () => {
-  console.log("server working");
+  console.log("Server running on port 3000");
 });
